@@ -46,6 +46,8 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
     def load_table(self,sql):
         output = LoadData(sql)
+        if output == []:
+            return False
         for row in output:
             row_pos = self.table.rowCount()
             self.table.insertRow(row_pos)
@@ -56,19 +58,24 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
     def error(self, text):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("مشکل")
-        msg.setInformativeText(text)
+        msg.setText(text)
         msg.setWindowTitle("مشکل")
         msg.exec_()
     
     def info(self, text):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
-        msg.setText("اطالاعات")
-        msg.setInformativeText(text)
+        msg.setText(text)
         msg.setWindowTitle("اطالاعات")
         msg.exec_()
-    
+
+    def question(self,title,text):
+        buttonReply = QMessageBox.question(self, title, text, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if buttonReply == QMessageBox.Yes:
+            return True
+        else:
+            return False
+        
     def savefile(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -88,6 +95,39 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             
             workbook.close()
             self.info('خروجی با موفقیت ایجاد شد !')
+    
+
+    def quit(self):
+        self.save()
+        exit(0)
+    
+    def closeEvent(self, event):
+        self.quit()
+        event.accept()
+
+    def about_programer(self):
+        self.info("این برنامه توسط علیرضا آهنی ساخته شده است.\nبرای تماس میتونید از ایمیل alirezaahani@protonmail.com\nاستفاده کنید")
+
+    def about_licenc(self):
+        self.info('این برنامه تحت مجوز نرم افزاری GPL نسخه ی ۳ منتشر شده است.')
+    
+    def reset_textboxs(self):
+        self.clear_table()
+        self.load_table('SELECT * FROM phones')
+        self.name.setText("")
+        self.family.setText("")
+        self.phone1.setText("")
+        self.phone2.setText("")
+        self.phone3.setText("")
+        self.home1.setText("")
+        self.home2.setText("")
+        self.work_number.setText("")
+        self.home_path.setText("")
+        self.fax.setText("")
+        self.website.setText("")
+        self.email.setText("")
+        self.phone_msg.setText("")
+        self.workpath.setText("")
     
     @pyqtSlot()
     def add_button(self):
@@ -111,8 +151,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         if datas['name'] and datas['family']:
             try:
                 AddData(list(datas.values()))
-                self.clear_table()
-                self.load_table('SELECT * FROM phones')
+                self.reset_textboxs()
             except db.IntegrityError:
                 self.error('اطالاعات مورد نظر در پایگاه داده موجود است')
         else:
@@ -172,24 +211,28 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             datas['workpath']
         )
         self.clear_table()
-        self.load_table(sql)
+        if self.load_table(sql) == False:
+            self.error("کاربری پیدا نشد.")
     
     @pyqtSlot()
     def delete_button(self):
-        print(self.size)
-        for index in sorted(self.table.selectionModel().selectedRows()):
-            row = index.row()
-            sql = "DELETE FROM Phones WHERE name LIKE '%{0}%' AND family LIKE '%{1}%' AND phone1 LIKE '%{2}%' AND id = '{3}'".format(
-                self.table.model().data(self.table.model().index(row, 0)),
-                self.table.model().data(self.table.model().index(row, 1)),
-                self.table.model().data(self.table.model().index(row, 2)),
-                self.table.model().data(self.table.model().index(row, 15))
-            )
-            cur = con.cursor()
-            cur.execute(sql)
-        con.commit()
-        self.clear_table()
-        self.load_table('SELECT * FROM Phones')
+        if self.table.selectionModel().selectedRows() == []:
+            self.error("لطفا کاربری را برای حذف انتخاب کنید")
+            return False
+        if self.question("حذف کاربر","آیا مطمئن هستید؟"):
+            for index in sorted(self.table.selectionModel().selectedRows()):
+                row = index.row()
+                sql = "DELETE FROM Phones WHERE name LIKE '%{0}%' AND family LIKE '%{1}%' AND phone1 LIKE '%{2}%' AND id = '{3}'".format(
+                    self.table.model().data(self.table.model().index(row, 0)),
+                    self.table.model().data(self.table.model().index(row, 1)),
+                    self.table.model().data(self.table.model().index(row, 2)),
+                    self.table.model().data(self.table.model().index(row, 15))
+                )
+                cur = con.cursor()
+                cur.execute(sql)
+            con.commit()
+            self.clear_table()
+            self.load_table('SELECT * FROM Phones')
     
     @pyqtSlot()
     def export(self):
