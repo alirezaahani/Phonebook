@@ -14,14 +14,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(948, 635)
         font = QtGui.QFont()
-        font.setFamily("Sahel")
-        font.setPointSize(9)
+        font.setFamily("Tahoma")
         MainWindow.setFont(font)
         MainWindow.setLayoutDirection(QtCore.Qt.RightToLeft)
-        MainWindow.setAutoFillBackground(False)
-        MainWindow.setStyleSheet("")
         MainWindow.setLocale(QtCore.QLocale(QtCore.QLocale.Persian, QtCore.QLocale.Iran))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
