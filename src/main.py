@@ -11,6 +11,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         super(App, self).__init__(parent)
         self.setupUi(self)
         self.load_table('SELECT * FROM phones')
+        self.showMaximized()
 
     def save(self):
         cur = con.cursor()
@@ -175,6 +176,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
     
     @pyqtSlot()
     def delete_button(self):
+        print(self.size)
         for index in sorted(self.table.selectionModel().selectedRows()):
             row = index.row()
             sql = "DELETE FROM Phones WHERE name LIKE '%{0}%' AND family LIKE '%{1}%' AND phone1 LIKE '%{2}%' AND id = '{3}'".format(
@@ -238,7 +240,6 @@ def main():
     CreateTable()
     mainApp = QApplication(['دفترچه تلفن'])
     mainWindow = App()
-    mainWindow.show()
     mainApp.exec_()
     con.close()
 
