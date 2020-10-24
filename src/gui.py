@@ -199,7 +199,7 @@ class Ui_MainWindow(object):
         self.phone_msg.setValidator(only_int_reg)
         
         #Only al part
-        only_english = QtCore.QRegExp('[A-Za-z0-9 \.\\@]+')
+        only_english = QtCore.QRegExp('[A-Za-z0-9 \.\\@\-_\+]+')
         only_persian = QtCore.QRegExp(r"[\s,"+persian_alpha_codepoints+additional_arabic_characters_codepoints
                      +punctuation_marks_codepoints+space_codepoints+arabic_numbers_codepoints+persian_num_codepoints+r" 0-9\-]+")
 
@@ -216,15 +216,25 @@ class Ui_MainWindow(object):
         self.workpath.setValidator(only_persian_reg)
 
         exitAction = QtWidgets.QAction('خروج', self)
-        exitAction.triggered.connect(exit)
+        exitAction.triggered.connect(self.quit)
         
         saveAction = QtWidgets.QAction('ذخیره', self)
         saveAction.triggered.connect(self.save)
 
+        about_programerAction = QtWidgets.QAction('درباره سازنده', self)
+        about_programerAction.triggered.connect(self.about_programer)
+
+        about_licencAction = QtWidgets.QAction('مجوز انتشار برنامه', self)
+        about_licencAction.triggered.connect(self.about_licenc)
+
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('فایل')
-        fileMenu.addAction(exitAction)
         fileMenu.addAction(saveAction)
+        fileMenu.addAction(exitAction)
+
+        aboutMenu = menubar.addMenu('درباره')
+        aboutMenu.addAction(about_programerAction)
+        aboutMenu.addAction(about_licencAction)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
