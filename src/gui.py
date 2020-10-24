@@ -16,7 +16,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(948, 635)
         font = QtGui.QFont()
-        font.setFamily("Tahoma")
+        font.setFamily("Sahel")
         font.setPointSize(9)
         MainWindow.setFont(font)
         MainWindow.setLayoutDirection(QtCore.Qt.RightToLeft)
@@ -203,10 +203,10 @@ class Ui_MainWindow(object):
         self.phone_msg.setValidator(only_int_reg)
         
         #Only al part
-        only_english = QtCore.QRegExp('[A-Za-z0-9 ]+')
+        only_english = QtCore.QRegExp('[A-Za-z0-9 \.\\@]+')
         only_persian = QtCore.QRegExp(r"[\s,"+persian_alpha_codepoints+additional_arabic_characters_codepoints
                      +punctuation_marks_codepoints+space_codepoints+arabic_numbers_codepoints+persian_num_codepoints+r" 0-9\-]+")
-        
+
         only_english_reg = QtGui.QRegExpValidator(only_english)
         only_persian_reg = QtGui.QRegExpValidator(only_persian)
         
