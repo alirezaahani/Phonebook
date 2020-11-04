@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 import xlsxwriter
+import xlrd
 
 class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
@@ -96,6 +97,36 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             workbook.close()
             self.info('خروجی با موفقیت ایجاد شد !')
     
+    def import_excel(self):
+        options = QFileDialog.Options()
+        options = QFileDialog.DontUseNativeDialog
+        user_file, _ = QFileDialog.getOpenFileName(self,"Please select a file", "","Excel File (*.xlsx)", options=options)
+        if user_file:
+            wb = xlrd.open_workbook(user_file)
+            sheet = wb.sheet_by_index(0)
+            
+            for i,row in enumerate(range(sheet.nrows)):
+                if i == 0:
+                    continue
+                
+                row_data = []
+                for j,col in enumerate(range(sheet.ncols)):
+                    if j == 15:
+                        continue
+                    
+                    row_data.append(sheet.cell_value(row, col))
+                
+                try:
+                    print(row_data)
+                    AddData(row_data)
+                    self.load_table('SELECT * FROM Phones')
+                    self.info('اطلاعات با موفقیت وارد شد !')
+                
+                except db.IntegrityError:
+                    self.error('کاربر شماره {0} موجود است!'.format(i))
+                
+                except db.ProgrammingError:
+                    self.error('فایل اکسل دستکاری شده است. کاربر {0} به پایگاه داده اضافه نمیشود.'.format(i))
 
     def quit(self):
         self.save()
