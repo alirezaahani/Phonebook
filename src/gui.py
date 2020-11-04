@@ -227,10 +227,24 @@ class Ui_MainWindow(object):
         about_licencAction = QtWidgets.QAction('مجوز انتشار برنامه', self)
         about_licencAction.triggered.connect(self.about_licenc)
 
+        about_licencAction = QtWidgets.QAction('مجوز انتشار برنامه', self)
+        about_licencAction.triggered.connect(self.about_licenc)
+
+        excelMenu_import = QtWidgets.QAction('وارد کردن اطلاعات از اکسل', self)
+        excelMenu_import.triggered.connect(self.import_excel)
+
+        excelMenu_export = QtWidgets.QAction('خروجی با فرمت اکسل', self)
+        excelMenu_export.triggered.connect(self.savefile)
+
         menubar = self.menuBar()
+
         fileMenu = menubar.addMenu('فایل')
         fileMenu.addAction(saveAction)
         fileMenu.addAction(exitAction)
+
+        excelMenu = menubar.addMenu('اکسل')
+        excelMenu.addAction(excelMenu_import)
+        excelMenu.addAction(excelMenu_export)
 
         aboutMenu = menubar.addMenu('درباره')
         aboutMenu.addAction(about_programerAction)
