@@ -1,7 +1,7 @@
 import gui
 import sqlite3 as db
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog, qApp
 from PyQt5.QtCore import pyqtSlot
 import xlsxwriter
 import xlrd
@@ -128,12 +128,12 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
                 except db.ProgrammingError:
                     self.error('فایل اکسل دستکاری شده است. کاربر {0} به پایگاه داده اضافه نمیشود.'.format(i))
 
-    def quit(self):
+    def quit_safe(self):
         self.save()
-        exit(0)
+        qApp.quit()
     
     def closeEvent(self, event):
-        self.quit()
+        self.quit_safe()
         event.accept()
 
     def about_programer(self):
