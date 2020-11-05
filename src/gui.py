@@ -216,7 +216,7 @@ class Ui_MainWindow(object):
         self.workpath.setValidator(only_persian_reg)
 
         exitAction = QtWidgets.QAction('خروج', self)
-        exitAction.triggered.connect(self.quit)
+        exitAction.triggered.connect(self.quit_safe)
         
         saveAction = QtWidgets.QAction('ذخیره', self)
         saveAction.triggered.connect(self.save)
