@@ -308,3 +308,4 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "وبسایت"))
         self.export_2.setText(_translate("MainWindow", "خروجی اکسل"))
         self.add.setText(_translate("MainWindow", "افزودن"))
+        self.all_messager_types = ['ایتا','سروش','واتس آپ','تلگرام','دیگر پیام رسان ها']
