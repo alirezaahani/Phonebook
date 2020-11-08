@@ -187,33 +187,33 @@ class Ui_MainWindow(object):
         persian_num_codepoints = '\u06F0-\u06F9'
         
         #OnlyInt part
-        only_int = QtCore.QRegExp("[0-9" + persian_num_codepoints + arabic_numbers_codepoints + "]+")
-        only_int_reg = QtGui.QRegExpValidator(only_int)
-        self.home1.setValidator(only_int_reg)
-        self.home2.setValidator(only_int_reg)
-        self.work_number.setValidator(only_int_reg)
-        self.phone1.setValidator(only_int_reg)
-        self.phone2.setValidator(only_int_reg)
-        self.phone3.setValidator(only_int_reg)
-        self.fax.setValidator(only_int_reg)
-        self.phone_msg.setValidator(only_int_reg)
+        self.only_int = QtCore.QRegExp("[0-9" + persian_num_codepoints + arabic_numbers_codepoints + "]+")
+        self.only_int_reg = QtGui.QRegExpValidator(self.only_int)
+        self.home1.setValidator(self.only_int_reg)
+        self.home2.setValidator(self.only_int_reg)
+        self.work_number.setValidator(self.only_int_reg)
+        self.phone1.setValidator(self.only_int_reg)
+        self.phone2.setValidator(self.only_int_reg)
+        self.phone3.setValidator(self.only_int_reg)
+        self.fax.setValidator(self.only_int_reg)
+        self.phone_msg.setValidator(self.only_int_reg)
         
         #Only al part
-        only_english = QtCore.QRegExp('[A-Za-z0-9 \.\\@\-_\+]+')
-        only_persian = QtCore.QRegExp(r"[\s,"+persian_alpha_codepoints+additional_arabic_characters_codepoints
-                     +punctuation_marks_codepoints+space_codepoints+arabic_numbers_codepoints+persian_num_codepoints+r" 0-9\-]+")
+        self.only_english = QtCore.QRegExp('[A-Za-z0-9 0-9\\#\+\-\−\_@\.]+')
+        self.only_persian = QtCore.QRegExp(r"[\s,"+persian_alpha_codepoints+additional_arabic_characters_codepoints
+                     +punctuation_marks_codepoints+space_codepoints+arabic_numbers_codepoints+persian_num_codepoints+r" 0-9\\#\+\-\−\_@\.]+")
 
-        only_english_reg = QtGui.QRegExpValidator(only_english)
-        only_persian_reg = QtGui.QRegExpValidator(only_persian)
+        self.only_english_reg = QtGui.QRegExpValidator(self.only_english)
+        self.only_persian_reg = QtGui.QRegExpValidator(self.only_persian)
         
-        self.website.setValidator(only_english_reg)
-        self.email.setValidator(only_english_reg)
+        self.website.setValidator(self.only_english_reg)
+        self.email.setValidator(self.only_english_reg)
 
-        self.name.setValidator(only_persian_reg)
-        self.family.setValidator(only_persian_reg)
+        self.name.setValidator(self.only_persian_reg)
+        self.family.setValidator(self.only_persian_reg)
         
-        self.home_path.setValidator(only_persian_reg)
-        self.workpath.setValidator(only_persian_reg)
+        self.home_path.setValidator(self.only_persian_reg)
+        self.workpath.setValidator(self.only_persian_reg)
 
         exitAction = QtWidgets.QAction('خروج', self)
         exitAction.triggered.connect(self.quit_safe)
@@ -234,7 +234,7 @@ class Ui_MainWindow(object):
         excelMenu_import.triggered.connect(self.import_excel)
 
         excelMenu_export = QtWidgets.QAction('خروجی با فرمت اکسل', self)
-        excelMenu_export.triggered.connect(self.savefile)
+        excelMenu_export.triggered.connect(self.export_excel)
 
         menubar = self.menuBar()
 
