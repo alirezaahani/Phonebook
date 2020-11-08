@@ -1,10 +1,11 @@
 import gui
 import sqlite3 as db
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog, qApp
-from PyQt5.QtCore import pyqtSlot
 import xlsxwriter
 import xlrd
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog
+from PyQt5.QtCore import pyqtSlot
+from sys import argv
 
 class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
@@ -62,11 +63,9 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
                 item = QtWidgets.QTableWidgetItem(str(column))
                 
                 if i == 12:
-
-                    person_messager = QtWidgets.QComboBox(self.centralwidget)
-                    person_messager.setObjectName('person_messager')
-                    person_messager.addItems(self.all_messager_types)
-                    person_messager.setCurrentIndex(self.all_messager_types.index(column))
+                    item = QtWidgets.QComboBox()
+                    item.addItems(self.all_messager_types)
+                    item.setCurrentIndex(self.all_messager_types.index(column))
                     normal_widget_item = False
 
                 if i == 15:
@@ -77,18 +76,18 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
                 if normal_widget_item:
                     self.table.setItem(row_pos, i, item)
                 else:
-                    self.table.setCellWidget(row_pos,i,person_messager)
+                    self.table.setCellWidget(row_pos,i,item)
         
         self.table.resizeColumnsToContents()
 
-    def error(self, text):
+    def error(self, text, title = "مشکل"):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText(text)
         msg.setWindowTitle("مشکل")
         msg.exec_()
     
-    def info(self, text):
+    def info(self, text, title = "اطلاعات"):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(text)
@@ -102,7 +101,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         else:
             return False
         
-    def savefile(self):
+    def export_excel(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self,"Export", "","Xls Files (*.xlsx)", options=options)
@@ -155,7 +154,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
     def quit_safe(self):
         self.save()
-        qApp.quit()
+        exit(0)
     
     def closeEvent(self, event):
         self.quit_safe()
@@ -292,7 +291,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
     
     @pyqtSlot()
     def export(self):
-        self.savefile()
+        self.export_excel()
 
 def CreateTable():
     global con
@@ -335,9 +334,9 @@ def AddData(values):
 
 def main():
     global con
-    con = db.connect('phones.sqlite3')
+    con = db.connect('.phones.sqlite3')
     CreateTable()
-    mainApp = QApplication(['دفترچه تلفن'])
+    mainApp = QApplication(argv)
     mainWindow = App()
     mainApp.exec_()
     con.close()
