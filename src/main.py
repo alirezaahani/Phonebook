@@ -19,7 +19,11 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         for i in range(self.table.rowCount()):
             column = list()
             for j in range(self.table.columnCount()):
-                column.append(self.table.model().data(self.table.model().index(i, j)))
+                if j != 12:
+                    column.append(self.table.model().data(self.table.model().index(i, j)))
+                else:
+                    column.append(self.table.cellWidget(i,j).currentText())
+            
             sql = """UPDATE Phones 
             SET name = '%s',
             family = '%s',
@@ -39,6 +43,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             WHERE id = %s;""" % tuple(column)
             cur.execute(sql)
             con.commit()
+        
         self.clear_table()
         self.load_table('SELECT * FROM Phones')
  
@@ -53,7 +58,27 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             row_pos = self.table.rowCount()
             self.table.insertRow(row_pos)
             for i, column in enumerate(row, 0):
-                self.table.setItem(row_pos, i, QtWidgets.QTableWidgetItem(str(column)))
+                normal_widget_item = True
+                item = QtWidgets.QTableWidgetItem(str(column))
+                
+                if i == 12:
+
+                    person_messager = QtWidgets.QComboBox(self.centralwidget)
+                    person_messager.setObjectName('person_messager')
+                    person_messager.addItems(self.all_messager_types)
+                    person_messager.setCurrentIndex(self.all_messager_types.index(column))
+                    normal_widget_item = False
+
+                if i == 15:
+                    flags = QtCore.Qt.ItemFlags()
+                    flags != QtCore.Qt.ItemIsEnabled
+                    item.setFlags(flags)
+                
+                if normal_widget_item:
+                    self.table.setItem(row_pos, i, item)
+                else:
+                    self.table.setCellWidget(row_pos,i,person_messager)
+        
         self.table.resizeColumnsToContents()
 
     def error(self, text):
@@ -91,9 +116,13 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
             for i in range(self.table.columnCount()):
                 for j in range(self.table.rowCount()):
-                    text = self.table.item(j, i).text()
+                    if i != 12:
+                        text = self.table.item(j, i).text()
+                    else:
+                        text = self.table.cellWidget(j,i).currentText()
+                        
                     worksheet.write(j + 1, i,text)
-            
+
             workbook.close()
             self.info('خروجی با موفقیت ایجاد شد !')
     
@@ -108,16 +137,12 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             for i,row in enumerate(range(sheet.nrows)):
                 if i == 0:
                     continue
-                
                 row_data = []
                 for j,col in enumerate(range(sheet.ncols)):
                     if j == 15:
                         continue
-                    
                     row_data.append(sheet.cell_value(row, col))
-                
                 try:
-                    print(row_data)
                     AddData(row_data)
                     self.load_table('SELECT * FROM Phones')
                     self.info('اطلاعات با موفقیت وارد شد !')
