@@ -1,3 +1,12 @@
+"""
+	These lines are for needed librarys. gui is not a library but it includes the main app class(its splited
+	because it would make this code more messy then it is).
+	Sqlite is the database for storing data.
+	XlsxWriter is for writing xlsx files.
+	Xlrd is for reading xlsx files.
+	PyQt is the base gui library.
+	Sys is one of useful python standerd library.
+"""
 import gui
 import sqlite3 as db
 import xlsxwriter
@@ -7,24 +16,44 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 from sys import argv
 
-class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
+"""
+	This class is the main app which extends the empty program window to a working one.
+"""
+class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
+	
+	# This function runs first for adding elements
     def __init__(self, parent=None):
+		# We init and add the ui elements to main window
         super(App, self).__init__(parent)
         self.setupUi(self)
+        # Load the datatable with a full quary
         self.load_table('SELECT * FROM phones')
+        # Maximize the window
         self.showMaximized()
 
+	
+	# This function updates the changed data in the datatable
     def save(self):
+		# We loop in rows and cols
         cur = con.cursor()
         for i in range(self.table.rowCount()):
-            column = list()
+			# This list resets every row for getting the new data
+            column = []
             for j in range(self.table.columnCount()):
+				# We skip the 12 col because its a combobox and cant be saved with the normal method
                 if j != 12:
                     column.append(self.table.model().data(self.table.model().index(i, j)))
+                    # This returns the data of table and we can extract the data by using data method
+                    # self.table.model().data()
+                    # This returns value of the normal textbox:
+                    # self.table.model().index(i, j)
+                    # And we combine them and append them to the list
                 else:
+					# We append the value of selected combobox and append it to column list for later
                     column.append(self.table.cellWidget(i,j).currentText())
             
+            # Here we make a standerd update sql quary with the values we got
             sql = """UPDATE Phones 
             SET name = '%s',
             family = '%s',
@@ -42,87 +71,126 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             phone_msg = '%s',
             workpath = '%s'
             WHERE id = %s;""" % tuple(column)
+            # We execute the quary
             cur.execute(sql)
+            # And commit it to be sure
             con.commit()
-        
-        self.clear_table()
-        self.load_table('SELECT * FROM Phones')
+		# The code above runs for all rows
  
     def clear_table(self):
+		# By setting the row count to 0 we can reset the datatable
         self.table.setRowCount(0)
-
+	
+	# This function loads the datatable with a givien quary
     def load_table(self,sql):
+		# We get the data from database functions
         output = LoadData(sql)
+        # If the output was false we return false which means user not found
         if output == []:
             return False
+        
         for row in output:
+			# We get the postion of datatable row
             row_pos = self.table.rowCount()
+            # This inserts a blank row
             self.table.insertRow(row_pos)
+            # This loop fills the row with data
             for i, column in enumerate(row, 0):
+				# This flags checks if the current item is a combobox or a normal item
                 normal_widget_item = True
+                # This creates a needed item for inserting to the row
                 item = QtWidgets.QTableWidgetItem(str(column))
                 
+                # The 12 col is always a combobox
                 if i == 12:
+					# We create a combobox like the combobox like in the main window
                     item = QtWidgets.QComboBox()
+					# This addeds all options to select
                     item.addItems(self.all_messager_types)
+                    # Sets the default item in combobox
                     item.setCurrentIndex(self.all_messager_types.index(column))
+                    # Set the flag so it can change the way to insert
                     normal_widget_item = False
-
+				
+				# The 15 one is the id part which is very important to not change
                 if i == 15:
+					# This sets the item status to be anything but not editable
                     flags = QtCore.Qt.ItemFlags()
                     flags != QtCore.Qt.ItemIsEnabled
                     item.setFlags(flags)
                 
+                # The normal way of adding the item
                 if normal_widget_item:
                     self.table.setItem(row_pos, i, item)
+                # Adding the widget item
                 else:
                     self.table.setCellWidget(row_pos,i,item)
         
+        #This resizes cols to be neat and good
         self.table.resizeColumnsToContents()
-
+	
+	# Dialog box for errors
     def error(self, text, title = "مشکل"):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText(text)
         msg.setWindowTitle("مشکل")
         msg.exec_()
-    
+        del msg
+    # Dialog box for infos
     def info(self, text, title = "اطلاعات"):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(text)
         msg.setWindowTitle("اطالاعات")
         msg.exec_()
-
+        del msg
+	# Dialog box for asking a question
     def question(self,title,text):
         buttonReply = QMessageBox.question(self, title, text, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if buttonReply == QMessageBox.Yes:
+            del buttonReply
             return True
         else:
+            del buttonReply
             return False
-        
+    
+    # Exporting a excel file for backup or etc
     def export_excel(self):
+		# A dialog box for saving a file
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self,"Export", "","Xls Files (*.xlsx)", options=options)
+        # This checks if user saved a file
         if fileName:
+			# This add .xlsx to end of file to make sure MS Windows os supports
             fileName += '.xlsx'
+            # Creating a workbook and sheet for saving the data (At the selected path)
             workbook = xlsxwriter.Workbook(fileName)
             worksheet = workbook.add_worksheet()
+            
+            # Adding the titles to excel file
             for i in range(self.table.columnCount()):
+					# Getting the value of every header(title)
                     text = self.table.horizontalHeaderItem(i).text()
+                    # Writing the value at row 0 and correct col
                     worksheet.write(0, i,text)
-
+			
+			# Adding the datas to excel file
             for i in range(self.table.columnCount()):
                 for j in range(self.table.rowCount()):
+					# The 12 col is speacial and we skip it
                     if i != 12:
+						# Getting the value of normal cols
                         text = self.table.item(j, i).text()
                     else:
+						# Getting the value of selected combobox
                         text = self.table.cellWidget(j,i).currentText()
-                        
+                    # Writing the value into excel file
                     worksheet.write(j + 1, i,text)
-
+			# Closing and saving the file
             workbook.close()
+            # 🤩︎
             self.info('خروجی با موفقیت ایجاد شد !')
     
     def import_excel(self):
@@ -274,6 +342,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         if self.table.selectionModel().selectedRows() == []:
             self.error("لطفا کاربری را برای حذف انتخاب کنید")
             return False
+        
         if self.question("حذف کاربر","آیا مطمئن هستید؟"):
             for index in sorted(self.table.selectionModel().selectedRows()):
                 row = index.row()
