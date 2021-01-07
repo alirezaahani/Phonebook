@@ -11,7 +11,6 @@ import gui
 import sqlite3 as db
 import xlsxwriter
 import xlrd
-import functools
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSlot
@@ -35,7 +34,6 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 
 	
 	# This function updates the changed data in the datatable
-    @functools.cache
     def save(self):
 		# We loop in rows and cols
         cur = con.cursor()
@@ -158,7 +156,6 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             return False
     
     # Exporting a excel file for backup or etc
-    @functools.cache
     def export_excel(self):
 		# A dialog box for saving a file
         options = QFileDialog.Options()
@@ -196,7 +193,6 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             # 🤩︎
             self.info('خروجی با موفقیت ایجاد شد !')
     
-    @functools.cache
     def import_excel(self):
         options = QFileDialog.Options()
         options = QFileDialog.DontUseNativeDialog
@@ -257,7 +253,6 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         self.workpath.setText("")
     
     @pyqtSlot()
-    @functools.cache
     def add_button(self):
         datas = {
             'name' : self.name.text(),
@@ -286,7 +281,6 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             self.error('لطفا نام و نام خانوادگی را پرکنید')
     
     @pyqtSlot()
-    @functools.cache
     def search_button(self):
         datas = {
             'name' : self.name.text(),
@@ -393,13 +387,11 @@ def CreateTable():
         ''')
     return True
 
-@functools.cache
 def LoadData(sql):
     cur = con.cursor()
     cur.execute(sql)
     return cur.fetchall()
 
-@functools.cache
 def AddData(values):
     cur = con.cursor()
     cur.execute('''
