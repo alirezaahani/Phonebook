@@ -19,6 +19,29 @@ class load_worker(QObject):
         database_data = LoadData(self.sql)
         self.finished.emit()
 
+class delete_worker(QObject):
+    finished = pyqtSignal()
+    def __init__(self, target):
+        super().__init__()
+        self.target = target
+
+    def run(self):
+        con = db.connect('.phones.sqlite3')
+        for index in sorted(self.target.table.selectionModel().selectedRows()):
+            row = index.row()
+            sql = "DELETE FROM Phones WHERE name LIKE '%{0}%' AND family LIKE '%{1}%' AND phone1 LIKE '%{2}%' AND id = '{3}'".format(
+                self.target.table.model().data(self.target.table.model().index(row, 0)),
+                self.target.table.model().data(self.target.table.model().index(row, 1)),
+                self.target.table.model().data(self.target.table.model().index(row, 2)),
+                self.target.table.model().data(self.target.table.model().index(row, 15))
+            )
+            cur = con.cursor()
+            cur.execute(sql)
+        con.commit()
+
+        self.target.clear_table()
+        self.target.load_table('SELECT * FROM Phones')
+
 class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
 	
     def __init__(self, parent=None):
@@ -235,7 +258,6 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             try:
                 AddData(list(datas.values()))
                 self.reset_textboxs()
-
                 row_pos = self.table.rowCount()
                 self.table.insertRow(row_pos)
                 for i, column in enumerate(datas.values(), 0):
@@ -327,19 +349,15 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             return False
         
         if self.question("حذف کاربر","آیا مطمئن هستید؟"):
-            for index in sorted(self.table.selectionModel().selectedRows()):
-                row = index.row()
-                sql = "DELETE FROM Phones WHERE name LIKE '%{0}%' AND family LIKE '%{1}%' AND phone1 LIKE '%{2}%' AND id = '{3}'".format(
-                    self.table.model().data(self.table.model().index(row, 0)),
-                    self.table.model().data(self.table.model().index(row, 1)),
-                    self.table.model().data(self.table.model().index(row, 2)),
-                    self.table.model().data(self.table.model().index(row, 15))
-                )
-                cur = con.cursor()
-                cur.execute(sql)
-            con.commit()
-            self.clear_table()
-            self.load_table('SELECT * FROM Phones')
+
+            self.del_thread = QThread()
+            self.worker = delete_worker(self)
+            self.worker.moveToThread(self.del_thread)
+            self.del_thread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.del_thread.finished.connect(self.del_thread.deleteLater)
+            self.del_thread.start()
     
     @pyqtSlot()
     def export(self):
