@@ -6,9 +6,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSlot, QObject, QThread, pyqtSignal
 from sys import argv
-import threading
 
-class database_worker(QObject):
+class load_worker(QObject):
     finished = pyqtSignal()
     def __init__(self, sql):
         super().__init__()
@@ -67,7 +66,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         database_data = None
         
         self.thread = QThread()
-        self.worker = database_worker(sql)
+        self.worker = load_worker(sql)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
@@ -75,9 +74,9 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.start()
 
-        self.thread.finished.connect(self.load_table_thread)
+        self.thread.finished.connect(self.load_table_thread_callback)
 
-    def load_table_thread(self):
+    def load_table_thread_callback(self):
         global database_data
         if database_data == []:
             return False
@@ -172,7 +171,7 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
                     row_data.append(sheet.cell_value(row, col))
                 try:
                     AddData(row_data)
-                    self.load_table('SELECT * FROM Phones')
+                    self.load_table('SELECT * FROM Phones')                    
                     self.info('اطلاعات با موفقیت وارد شد !')
                 
                 except db.IntegrityError:
@@ -196,8 +195,8 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         self.info('این برنامه تحت مجوز نرم افزاری GPL نسخه ی ۳ منتشر شده است.')
     
     def reset_textboxs(self):
-        self.clear_table()
-        self.load_table('SELECT * FROM phones')
+        #self.clear_table()
+        #self.load_table('SELECT * FROM phones')
         self.name.setText("")
         self.family.setText("")
         self.phone1.setText("")
@@ -236,6 +235,29 @@ class App(QtWidgets.QMainWindow, gui.Ui_MainWindow):
             try:
                 AddData(list(datas.values()))
                 self.reset_textboxs()
+
+                row_pos = self.table.rowCount()
+                self.table.insertRow(row_pos)
+                for i, column in enumerate(datas.values(), 0):
+                    normal_widget_item = True
+                    item = QtWidgets.QTableWidgetItem(str(column))
+                    if i == 12:
+                        item = QtWidgets.QComboBox()
+                        item.addItems(self.all_messager_types)
+                        item.setCurrentIndex(self.all_messager_types.index(column))
+                        normal_widget_item = False
+                    
+                    if i == 15:
+                        flags = QtCore.Qt.ItemFlags()
+                        flags != QtCore.Qt.ItemIsEnabled
+                        item.setFlags(flags)
+                    
+                    if normal_widget_item:
+                        self.table.setItem(row_pos, i, item)
+                    else:
+                        self.table.setCellWidget(row_pos,i,item)
+            
+                self.table.resizeColumnsToContents()
             except db.IntegrityError:
                 self.error('اطالاعات مورد نظر در پایگاه داده موجود است')
         else:
